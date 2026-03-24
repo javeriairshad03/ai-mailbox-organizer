@@ -1,6 +1,10 @@
 # AI Mailbox Organizer
 An AI-powered email automation system using n8n, Docker, and Llama 3. A local automation system that uses **LLMs** to sort and respond to emails.
 
+![AI Mailbox Workflow](organizer_workflow.png)
+
+![AI Mailbox Workflow](worker_workflow.png)
+
 ## 🛠️ Tech Stack
 * **n8n:** Workflow automation platform.
 * **Docker Desktop:** To run n8n in an isolated, lightweight container.
