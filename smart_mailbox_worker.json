@@ -1,0 +1,286 @@
+{
+  "name": "Smart Mailbox - Worker",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "daysInterval": 3
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -768,
+        192
+      ],
+      "id": "090c0afc-6b7a-4c87-b300-b9bf6e9c098e",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "limit": 20,
+        "filters": {
+          "q": "label:To-be-Trashed older_than:7d"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -336,
+        -64
+      ],
+      "id": "f518de44-e5ec-47ad-8a03-77f1db8317e7",
+      "name": "GET TO-BE-TRASHED",
+      "webhookId": "2a58d931-5d5f-4b3a-a88f-4e779ade45a7",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "NXizESpukdguWCej",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "thread",
+        "operation": "trash",
+        "threadId": "={{ $json.threadId }}"
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        16,
+        -64
+      ],
+      "id": "63932206-19ad-4443-aee1-49229579cabd",
+      "name": "MOVE TO TRASH",
+      "webhookId": "edde6137-443d-4ac5-817f-2c7b16ba3662",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "NXizESpukdguWCej",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "limit": 5,
+        "filters": {
+          "q": "label:personal"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -352,
+        384
+      ],
+      "id": "11169deb-c624-429a-a1be-49fd7aaa29dd",
+      "name": "GET PERSONAL (INBOX)",
+      "webhookId": "2a58d931-5d5f-4b3a-a88f-4e779ade45a7",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "NXizESpukdguWCej",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=",
+        "hasOutputParser": true,
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=You are an inetlligent and warm personal assistant. You must return a JSON object.\nInside the \"email_body\", you MUST use double newlines (\\n\\n) to separate the greeting, the message, and the sign-off.\n\nFormat Template:\nHi [First Name],\n\n[reply here, no any robotic or AI tone or staring with something I asked for, but act like a personal intelligent asssisstant replying for my emails for me, being warm and short trying to be within 3-4 sentences max]\n\nBest regards,\nJaveria Irshad"
+            },
+            {
+              "type": "AIMessagePromptTemplate",
+              "message": "=Format the data in JSON Format:\n{\n\"subject_line\": \"\";\n\"email_body\": \"\"\n}"
+            },
+            {
+              "type": "HumanMessagePromptTemplate",
+              "message": "=Write a reply to this email from {{ $json.From }}, \nContent: \"{{ $json.snippet }}\" \nImportant: Address them by their first name. Reply as an inetlligent and warm personal assistant. Sign off as Javeria Irshad."
+            }
+          ]
+        },
+        "batching": {
+          "batchSize": 1
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        32,
+        384
+      ],
+      "id": "623c38b3-870f-4e16-a470-ac6d2f12f8fb",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.1-8b-instant",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        16,
+        560
+      ],
+      "id": "34eb6223-b6f9-4c7d-9a43-9b4f8bce8b4f",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "ceQe86qlInCXbtA4",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "draft",
+        "subject": "=Re: {{ $('GET PERSONAL (INBOX)').item.json.Subject }}",
+        "message": "={{ $json.output.email_body }}",
+        "options": {
+          "threadId": "={{ $('GET PERSONAL (INBOX)').item.json.threadId }}"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        544,
+        384
+      ],
+      "id": "07aa7ade-84f2-4356-b78d-aac3224a01d5",
+      "name": "Create a draft",
+      "webhookId": "69a01dbf-0da6-483c-85a0-d17f207859fd",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "NXizESpukdguWCej",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"subject_line\": \"Re: Hello\",\n  \"email_body\": \"Hi [Name],\\n\\n[Message goes here]\\n\\nBest regards,\\nJaveria Irshad\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        208,
+        560
+      ],
+      "id": "91595be3-4e7c-4aa1-87f2-2c9e79f634db",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "content": "## 🤖 Phase 2: The Smart Mailbox Worker\n\n**Goal: Take care of daily chores and help with email replies.**\n\nWhile the Organizer sorts your mail instantly, the Worker handles the \"heavy lifting\" on a schedule. It acts like a quiet helper that cleans up your trash and gets your personal replies ready so you don't have to start from scratch.\n\n### ✨ What it does for you:\n* 🧹 **The Janitor:** Automatically finds emails labeled as \"To-Be-Trashed\" and moves to \"Trash\", once they are 7 days old.\n\n* ✍️ **The Assistant:** Checks for new \"Personal\" emails and writes a warm, human-friendly draft reply for you, with signs off with your name.\n\n* ⏳ **Smart Timing:** Runs once a day (or whenever you choose) to stay efficient without hitting any limits.",
+        "height": 432,
+        "width": 496
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        240,
+        -96
+      ],
+      "id": "48ddf561-b02b-40ec-ac6d-2c991184bbac",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "GET TO-BE-TRASHED": {
+      "main": [
+        [
+          {
+            "node": "MOVE TO TRASH",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET PERSONAL (INBOX)": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Create a draft",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "GET PERSONAL (INBOX)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "GET TO-BE-TRASHED",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "849073d9-344c-4877-829d-0ea946ab20ef",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "9c728b3a77bbb5f04e7ac9d56bec1398ef4e9437fa48fdb0ac5aeaca0ffff4b2"
+  },
+  "id": "wiqaygocS3JRmWPT",
+  "tags": []
+}

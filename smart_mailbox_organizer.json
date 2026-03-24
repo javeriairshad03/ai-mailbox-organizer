@@ -1,0 +1,535 @@
+{
+  "name": "Smart Mailbox - Organizer",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        304,
+        336
+      ],
+      "id": "2bd829a9-bd81-4773-bc35-1e6abef3cb70",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "NXizESpukdguWCej",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputText": "=Subject:  {{ $json.Subject }}\nContent: {{ $json.snippet }}",
+        "categories": {
+          "categories": [
+            {
+              "category": "OTPs & Confirm. Codes",
+              "description": "This is any email having keywords or anythig like Multi-factor authentication, 2FA, one-time passwords, or numeric/alphanumeric verification strings, then classify them here."
+            },
+            {
+              "category": "PROMOTIONS",
+              "description": "Any emails like Marketing newsletters, sales offers, \"off\" percentages, coupons, or subscription-based content (e.g., Pinterest/Canva updates), .educational offers, career updates, course recommendations (like Coursera or IBM) or career grouwth offers, and brand announcements."
+            },
+            {
+              "category": "SPAM",
+              "description": "Obvious junk mail, \"Lottery winner,\" \"Urgent\" fake claims, or unsolicited irrelevant offers."
+            },
+            {
+              "category": "SOCIALS",
+              "description": "Any email Notifications from LinkedIn, Facebook, Instagram, or social platform messages/comments."
+            },
+            {
+              "category": "Reciepts",
+              "description": "Any emails regarding Transaction confirmations, invoices, Easypaisa/bank payment alerts, or \"Money Transfer\" successful messages, should be categorized under here."
+            },
+            {
+              "category": "Login Alerts",
+              "description": "This is any email or Notifications of new sign-ins, security alerts from Google/Microsoft/Apple/Instagram/Facebook or any socials, account recovery warnings, or \"unusual activity\" reports."
+            },
+            {
+              "category": "Personal",
+              "description": "Strictly for direct, one-to-one emails from a real human being. If the email is sent by a company, a platform, an automated system, or a school/service (like IBM, Coursera, LinkedIn), it is NOT Personal. If it is sent from a 'no-reply' address, it is NEVER Personal."
+            },
+            {
+              "category": "Learning & Newsletters",
+              "description": "Any automated email about courses, certificates, or professional updates."
+            }
+          ]
+        },
+        "options": {
+          "systemPromptTemplate": "You are a text classifier. Return only the JSON object. Do not use Markdown code blocks or backticks (```). Don't explain, and Do not include any text before or after the JSON.",
+          "enableAutoFixing": true,
+          "batching": {
+            "batchSize": 1,
+            "delayBetweenBatches": 3
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.textClassifier",
+      "typeVersion": 1.1,
+      "position": [
+        768,
+        240
+      ],
+      "id": "2bb2c63e-2815-4f1a-a9d7-42ca0046022c",
+      "name": "Text Classifier",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "model": "llama-3.1-8b-instant",
+        "options": {
+          "maxTokensToSample": 150,
+          "temperature": 0.1
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        864,
+        624
+      ],
+      "id": "040a2041-06c8-4544-907e-180ee621cfdc",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "ceQe86qlInCXbtA4",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}",
+        "labelIds": [
+          "Label_7084536505033067840"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1600,
+        736
+      ],
+      "id": "a2bd3f45-6836-4e34-89ad-c6af368e23e3",
+      "name": "PERSONAL",
+      "webhookId": "3968fcff-8fa4-452d-abf0-0fa21faf43ff",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "NXizESpukdguWCej",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}",
+        "labelIds": [
+          "Label_6237535510305402280",
+          "Label_3181281840187541414"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1600,
+        576
+      ],
+      "id": "7b53e9e6-721a-47ed-8e9f-a25bcd2ce356",
+      "name": "LOGIN ALERTS",
+      "webhookId": "3968fcff-8fa4-452d-abf0-0fa21faf43ff",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "NXizESpukdguWCej",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}",
+        "labelIds": [
+          "Label_2210370483683899072"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1600,
+        416
+      ],
+      "id": "5cb7a240-d735-4038-9d02-e1f5980b8c7e",
+      "name": "RECIEPTS",
+      "webhookId": "3968fcff-8fa4-452d-abf0-0fa21faf43ff",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "NXizESpukdguWCej",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}",
+        "labelIds": [
+          "Label_4776931709128692991",
+          "Label_3181281840187541414"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1600,
+        -80
+      ],
+      "id": "fdd517eb-30f8-4776-ae51-db3f39f4dccd",
+      "name": "PROMOTIONS & DISCOUNTS",
+      "webhookId": "3968fcff-8fa4-452d-abf0-0fa21faf43ff",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "NXizESpukdguWCej",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}",
+        "labelIds": [
+          "Label_7984105084947675200",
+          "Label_3181281840187541414"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1600,
+        -256
+      ],
+      "id": "5554317a-77ed-45e6-acb1-e9515319f751",
+      "name": "OTPs & CONFIRM. CODES",
+      "webhookId": "3968fcff-8fa4-452d-abf0-0fa21faf43ff",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "NXizESpukdguWCej",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}",
+        "labelIds": [
+          "Label_3066864115329389242",
+          "Label_3181281840187541414"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1600,
+        896
+      ],
+      "id": "92576849-f67a-419d-8be0-cb8177089161",
+      "name": "Learning & Newsletters",
+      "webhookId": "3968fcff-8fa4-452d-abf0-0fa21faf43ff",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "NXizESpukdguWCej",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "removeLabels",
+        "messageId": "={{ $json.id }}",
+        "labelIds": [
+          "INBOX"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        2448,
+        352
+      ],
+      "id": "0a099852-7f3f-4e2f-bf22-641a6e0a0320",
+      "name": "REMOVE FROM INBOX",
+      "webhookId": "51188c25-1d9c-4898-9d41-cc3d00966eeb",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "NXizESpukdguWCej",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}",
+        "labelIds": [
+          "SPAM",
+          "Label_3181281840187541414"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1600,
+        96
+      ],
+      "id": "832f82a3-9730-424b-89ec-2021db7b3748",
+      "name": "SPAM",
+      "webhookId": "3968fcff-8fa4-452d-abf0-0fa21faf43ff",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "NXizESpukdguWCej",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}",
+        "labelIds": [
+          "CATEGORY_SOCIAL",
+          "CATEGORY_UPDATES",
+          "Label_3181281840187541414"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1600,
+        256
+      ],
+      "id": "63a6e081-2bbe-43b9-9e92-341593f29839",
+      "name": "SOCIALS",
+      "webhookId": "3968fcff-8fa4-452d-abf0-0fa21faf43ff",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "NXizESpukdguWCej",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## 📬 Phase 1: The Smart Organizer\n**Goal: Categorize incoming mail instantly to keep the Inbox at Zero.**\n\nThe Smart Organizer is a high-performance automation designed to act as a \"Digital Gatekeeper.\" By leveraging Groq’s LPU Inference Engine and Llama 3.1, this workflow analyzes the intent of every incoming email in real-time, categorizes it, and clears the primary inbox—ensuring you only see what truly matters.\n\n* ⚡ **Instant Sorting:** \nWorks in the background the moment an email hits your inbox—no waiting.\n\n* 🧠 **Intelligent Labeling:** \nDynamically sorts emails into the following buckets:\n  - Personal, Learning & Newsletters, Socials, Receipts, Promotions, Login Alerts, and OTP/Codes.\n\n*  🧹 **Automatic Clean-up:** \nOnce it puts a label on an email, it moves it out of your main Inbox. This keeps your main view clean and distraction-free.\n\n* 🛠️ **Reliable Design:** Built as a separate \"worker\" so it stays fast and never misses an email..",
+        "height": 480,
+        "width": 688
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        304,
+        -256
+      ],
+      "id": "08eb3713-d405-4d56-8e8d-3a08271e97d2",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Text Classifier",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Text Classifier",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Text Classifier": {
+      "main": [
+        [
+          {
+            "node": "OTPs & CONFIRM. CODES",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "PROMOTIONS & DISCOUNTS",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "SPAM",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "SOCIALS",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "RECIEPTS",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "LOGIN ALERTS",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "PERSONAL",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Learning & Newsletters",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PERSONAL": {
+      "main": [
+        [
+          {
+            "node": "REMOVE FROM INBOX",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OTPs & CONFIRM. CODES": {
+      "main": [
+        [
+          {
+            "node": "REMOVE FROM INBOX",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PROMOTIONS & DISCOUNTS": {
+      "main": [
+        [
+          {
+            "node": "REMOVE FROM INBOX",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RECIEPTS": {
+      "main": [
+        [
+          {
+            "node": "REMOVE FROM INBOX",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LOGIN ALERTS": {
+      "main": [
+        [
+          {
+            "node": "REMOVE FROM INBOX",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Learning & Newsletters": {
+      "main": [
+        [
+          {
+            "node": "REMOVE FROM INBOX",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SPAM": {
+      "main": [
+        [
+          {
+            "node": "REMOVE FROM INBOX",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SOCIALS": {
+      "main": [
+        [
+          {
+            "node": "REMOVE FROM INBOX",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "03de2e6a-eeea-4270-a497-f61bf9d0c919",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "9c728b3a77bbb5f04e7ac9d56bec1398ef4e9437fa48fdb0ac5aeaca0ffff4b2"
+  },
+  "id": "ziZ5paZyzqT59vUf",
+  "tags": []
+}
